@@ -6,7 +6,7 @@ on:
       payload:
         description: 'JSON Payload for Video Generation'
         required: true
-        default: '{"text": "Hello World", "effect": "glitch"}'
+        default: '{"text": "MY FIRST AUTO REEL", "subtitle": "Built without writing code!"}'
 
 jobs:
   build:
@@ -27,9 +27,10 @@ jobs:
       - name: Render Video
         run: |
           echo "Received JSON payload:"
-          echo "${{ github.event.inputs.payload }}"
-          # Yahan hum Remotion/Vanta ka render command chalayenge jo JSON read karega
-          npx remotion render src/index.ts MyComp out/video.mp4
+          echo '${{ github.event.inputs.payload }}'
+          
+          # Remotion render command jo GitHub actions ke input JSON ko props me pass karegi
+          npx remotion render src/index.ts KineticText out/video.mp4 --props='${{ github.event.inputs.payload }}'
 
       - name: Upload Video Artifact
         uses: actions/upload-artifact@v4
