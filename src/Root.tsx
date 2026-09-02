@@ -1,12 +1,16 @@
-import { Composition } from "remotion";
-import { VantaShowcase } from "./scenes/VantaShowcase";
-import { ParticleScene } from "./scenes/ParticleScene";
-import { KineticText } from "./scenes/KineticText";
-import { DataVizScene } from "./scenes/DataVizScene";
-import { WaveformScene } from "./scenes/WaveformScene";
+import { Composition, Sequence, AbsoluteFill } from "remotion";
 
-export const RemotionRoot: React.FC = () => {
-  // 1. GitHub Actions / Environment se JSON Payload read karna
+// ==========================================
+// [FIXED] - Core Engine & Advanced Effects Library Imports
+// ==========================================
+import { AdvancedSceneRenderer } from "./engine/AdvancedSceneRenderer";
+import { GlitchTransition } from "./effects/GlitchTransition";
+import { ColorGradingFilter } from "./effects/ColorGradingFilter";
+
+export const AdvancedRemotionRoot: React.FC = () => {
+  // ==========================================
+  // [FIXED] - Advanced Payload / JSON Security Reader
+  // ==========================================
   let payload: any = {};
   try {
     const rawPayload = process.env.REMOTION_INPUT_PROP || "{}";
@@ -15,64 +19,57 @@ export const RemotionRoot: React.FC = () => {
     payload = {};
   }
 
-  // 2. Dynamic values jo JSON se aayengi (fallback ke sath)
-  const customText = payload.text || "AUTO VIDEO";
-  const customSubtitle = payload.subtitle || "Powered by Vanta & GitHub Actions";
+  // ==========================================
+  // [CHANGEABLE] - Advanced Dynamic Properties from Payload
+  // Yeh har advanced video ke sath poori tarah badal jayenge
+  // ==========================================
+  const activeScenes = payload.scenes || [
+    { type: "CinematicZoom", duration: 90, imageUrl: "", title: "Default" }
+  ]; // [CHANGEABLE] - Kaun kaun se scenes aane hain aur kis kram me aane hain
+  
+  const globalTheme = payload.theme || "cyberpunk"; // [CHANGEABLE] - Color theme (cyberpunk, minimal, dark)
+  const enableGlitch = payload.glitchEffect ?? true;  // [CHANGEABLE] - Special FX switch
+  const totalDuration = activeScenes.reduce((acc, scene) => acc + scene.duration, 0); // [CHANGEABLE] - Total video length
 
   return (
     <>
-      {/* 1. Vanta Showcase Scene */}
+      {/* ========================================== */}
+      {/* [FIXED] - Master Advanced Composition Container */}
+      {/* ========================================== */}
       <Composition
-        id="VantaShowcase"
-        component={VantaShowcase}
-        durationInFrames={450}
-        fps={30}
-        width={1920}
-        height={1080}
-      />
+        id="AdvancedCustomVideo"
+        component={() => (
+          <AbsoluteFill style={{ backgroundColor: globalTheme === "cyberpunk" ? "#0f051d" : "#000" }}>
+            
+            {/* [CHANGEABLE] - Dynamic Scene Sequence Loop */}
+            {activeScenes.map((sceneConfig: any, index: number) => {
+              const startFrame = activeScenes.slice(0, index).reduce((acc: number, s: any) => acc + s.duration, 0);
+              
+              return (
+                <Sequence key={index} from={startFrame} durationInFrames={sceneConfig.duration}>
+                  {/* [CHANGEABLE] - Advanced Scene Renderer handles custom layers, images & text */}
+                  <AdvancedSceneRenderer 
+                    type={sceneConfig.type} 
+                    imageUrl={sceneConfig.imageUrl} 
+                    title={sceneConfig.title} 
+                    animationStyle={sceneConfig.animationStyle}
+                  />
+                </Sequence>
+              );
+            })}
 
-      {/* 2. Particles Scene */}
-      <Composition
-        id="Particles"
-        component={ParticleScene}
-        durationInFrames={150}
-        fps={30}
-        width={1920}
-        height={1080}
-      />
+            {/* [CHANGEABLE] - Conditional Advanced FX Overlay */}
+            {enableGlitch && <GlitchTransition />}
 
-      {/* 3. Kinetic Text Scene (Dynamic JSON Props connected) */}
-      <Composition
-        id="KineticText"
-        component={KineticText}
-        durationInFrames={120}
-        fps={30}
-        width={1920}
-        height={1080}
-        defaultProps={{ 
-          text: customText, 
-          subtitle: customSubtitle 
-        }}
-      />
+            {/* [FIXED] - Global Color Grading Filter Layer */}
+            <ColorGradingFilter theme={globalTheme} />
 
-      {/* 4. Data Viz Scene */}
-      <Composition
-        id="DataViz"
-        component={DataVizScene}
-        durationInFrames={120}
-        fps={30}
-        width={1920}
-        height={1080}
-      />
-
-      {/* 5. Waveform Scene */}
-      <Composition
-        id="Waveform"
-        component={WaveformScene}
-        durationInFrames={120}
-        fps={30}
-        width={1920}
-        height={1080}
+          </AbsoluteFill>
+        )}
+        durationInFrames={totalDuration > 0 ? totalDuration : 300} // [CHANGEABLE] - Dynamic total frames
+        fps={30}       // [FIXED]
+        width={1920}   // [FIXED]
+        height={1080}  // [FIXED]
       />
     </>
   );
